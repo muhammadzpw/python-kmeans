@@ -53,4 +53,8 @@ X1 = [
 
 kmeans_model.predict(X1)
 # [0, 2, 0]
+
+# Show your cluster's centroids
+kmeans_model.centroids
+# [array([2.25, 3.5 ]), array([8., 9.]), array([10.5,  7.5])]
 ```
