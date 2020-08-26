@@ -39,6 +39,10 @@ X = [
 # define K-Means model
 kmeans_model = KMeans(k=3, init_centroid="naive_sharding", distance="euclidean")
 kmeans_model.train(X, max_iteration=10, tolerance=0.01)
+# [0, 0, 0, 1, 2, 0, 2]
+# cluster0 [array([1, 2]), array([3, 4]), array([1, 5]), array([4, 3])]
+# cluster1 [array([8, 9])]
+# cluster2 [array([10,  7]), array([11,  8])]
 
 # after training, you can use the model to predict some points
 X1 = [
@@ -48,5 +52,5 @@ X1 = [
     ]
 
 kmeans_model.predict(X1)
-
+# [0, 2, 0]
 ```
