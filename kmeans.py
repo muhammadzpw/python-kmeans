@@ -1,6 +1,7 @@
 import numpy as np
 import math
 from distance import euclidean, manhattan, cosine
+from time import time
 
 VALID_DISTANCE_ARG = {
   "euclidean": euclidean,
@@ -11,14 +12,14 @@ VALID_DISTANCE_ARG = {
 VALID_INIT_CENTROID_ARG = ["random", "naive_sharding"]
 
 class KMeans():
-  def __init__(self, k=3, init_centroid="random", distance="euclidean"):
-    '''
+  '''
     Initialization of KMeans model
     params:
     - k : number of cluster
     - init_centroid : strategy to initialize the centroid. valid arguments: "random", "naive_sharding"
     - distannce : metrics to calculate distance of each point of datum. valid arguments: "euclidean", "manhattan", "cosine"
     '''
+  def __init__(self, k=3, init_centroid="random", distance="euclidean"):
     self.k = k
     if init_centroid in VALID_INIT_CENTROID_ARG:
       self.init_centroid = init_centroid
@@ -46,7 +47,6 @@ class KMeans():
     for _ in range(self.k):
       rand_centroid = self.choose_random_point(X)
       initial_centroids.append(rand_centroid)
-    print("init centroid", initial_centroids)
     return initial_centroids
 
   def naive_sharding_init(self, X):
@@ -68,12 +68,10 @@ class KMeans():
 
     # 3 & 4
     segment = math.ceil(len(list_of_instance_sum_tupple) / self.k)
-    shards = []
     for i in range(self.k):
       # 3
       shard = list_of_instance_sum_tupple[(i * segment):((i+1) * segment)]
       shard = [x[1] for x in shard]
-      shards.append(shard)
       # 4 mean of shard
       mean_shard = np.zeros(self.n_features)
       for x in shard:
@@ -83,7 +81,7 @@ class KMeans():
 
     return initial_centroids
 
-  def train(self, X, max_iteration = 100, tolerance = 0.001):
+  def train(self, X, max_iteration = 100, tolerance = 0.001, verbose=False):
     '''
     Process to train data into K cluster using KMeans
 
@@ -93,6 +91,8 @@ class KMeans():
     - tolerance : stop iteration when the centroid do not change that much 
 
     '''
+    start_time = time()
+
     X = np.array(X)
     # Validate: matrix X must be 2D array
     if len(X.shape) != 2:
@@ -107,7 +107,9 @@ class KMeans():
       self.centroids = self.random_init(X)
     else:
       self.centroids = self.naive_sharding_init(X)
-    print("initial centroid", self.centroids)
+  
+    if verbose:
+      print("initial centroid", self.centroids)
 
     # Init empty cluster member
     self.cluster_members = [[] for _ in range(self.k)]
@@ -116,27 +118,31 @@ class KMeans():
     iteration = 0
     total_diff = float("inf")
     while iteration < max_iteration:
-      print("iteration", iteration)
-      print("centroid", self.centroids)
+
+      if verbose:
+        print("iteration", iteration)
+        print("centroid", self.centroids)
+
       current_cluster_members = [[] for _ in range(self.k)]      
       for data_point in X:
-        print()
-        print(data_point)
+        # print()
+        # print(data_point)
         # calculate distance to each centroids
         min_distance = float("inf")
         cluster = None
         for cluster_idx, centroid_i in enumerate(self.centroids):
           distance = self.distance(centroid_i, data_point)
-          print("centroid, distance", centroid_i, distance)
+          # print("centroid, distance", centroid_i, distance)
           if distance <= min_distance:
             cluster = cluster_idx
             min_distance = distance
         # the nearest distance will place the point to corresponding cluster
         current_cluster_members[cluster].append(data_point)
 
-      print("cluster member")
-      for idx, ccm in enumerate(current_cluster_members):
-        print("cluster" + str(idx), ccm)
+      if verbose:
+        print("cluster member")
+        for idx, ccm in enumerate(current_cluster_members):
+          print("cluster" + str(idx), ccm)
 
       new_centroids = [[] for _ in range(self.k)]
       for cluster_i in range(self.k):
@@ -146,14 +152,16 @@ class KMeans():
         if len(members_of_current_cluster) > 0:
           for member in current_cluster_members[cluster_i]:
             new_centroid_i = new_centroid_i + member
-          new_centroid_i = new_centroid_i / len(members_of_current_cluster)
+          new_centroid_i = new_centroid_i / len(members_of_current_cluster) # Get average point from all members
         else:
           # If cluster has no member then pick random point
           new_centroid_i = self.choose_random_point(X)
 
         new_centroids[cluster_i] = new_centroid_i
 
-      print("new centroid", new_centroids)
+      if verbose:
+        print("new centroid", new_centroids)
+
       # Stop Iteration if centroids do not change
       total_diff = float(0.0)
       for cluster_i in range(self.k):
@@ -162,16 +170,20 @@ class KMeans():
       self.centroids = new_centroids
       self.cluster_members = current_cluster_members
       
-      print("total diffs:", total_diff)
+      if verbose:
+        print("total diffs:", total_diff)
+        print()
+
       if total_diff <= tolerance:
         break
-
       iteration = iteration + 1
-      print()
 
-    print(self.cluster_members)
-    for idx, cm in enumerate(self.cluster_members):
-      print("cluster"+ str(idx), cm)
+    if verbose:
+      print(self.cluster_members)
+      for idx, cm in enumerate(self.cluster_members):
+        print("cluster"+ str(idx), cm)
+    print("Training time", (time() - start_time) * 100 , "ms")
+    print("Stopped at iteration", iteration)
     return self.predict(X)
 
 
