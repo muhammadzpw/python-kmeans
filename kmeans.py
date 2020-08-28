@@ -123,7 +123,8 @@ class KMeans():
         print("iteration", iteration)
         print("centroid", self.centroids)
 
-      current_cluster_members = [[] for _ in range(self.k)]      
+      current_inertia = float(0.0)
+      current_cluster_members = [[] for _ in range(self.k)]
       for data_point in X:
         # print()
         # print(data_point)
@@ -138,6 +139,7 @@ class KMeans():
             min_distance = distance
         # the nearest distance will place the point to corresponding cluster
         current_cluster_members[cluster].append(data_point)
+        current_inertia = current_inertia + min_distance
 
       if verbose:
         print("cluster member")
@@ -169,6 +171,7 @@ class KMeans():
       
       self.centroids = new_centroids
       self.cluster_members = current_cluster_members
+      self.inertia = current_inertia
       
       if verbose:
         print("total diffs:", total_diff)
@@ -184,6 +187,7 @@ class KMeans():
         print("cluster"+ str(idx), cm)
     print("Training time", (time() - start_time) * 100 , "ms")
     print("Stopped at iteration", iteration)
+    self.n_iteration = iteration
     return self.predict(X)
 
 
@@ -200,22 +204,3 @@ class KMeans():
           min_distance = distance
       result.append(cluster)
     return result
-
-  # def test(self, X):
-  #   X = np.array(X)
-  #   # Validate: matrix X must be 2D array
-  #   if len(X.shape) != 2:
-  #     raise Exception("Data must be 2D array")
-
-  #   for data_point in X:
-  #     # calculate distance to each centroids
-  #     min_distance = float("inf")
-  #     cluster = None
-  #     current_cluster_members = [[] for _ in range(self.k)]    
-  #     for cluster_idx, centroid_i in enumerate(self.centroids):
-  #       distance = self.distance(centroid_i, data_point)
-  #       if distance <= min_distance:
-  #         cluster = cluster_idx
-  #         min_distance = distance
-  #     # the nearest distance will place the point to corresponding cluster
-  #     current_cluster_members[cluster].append(data_point)
