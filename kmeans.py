@@ -130,7 +130,7 @@ class KMeans():
         # print(data_point)
         # calculate distance to each centroids
         min_distance = float("inf")
-        cluster = None
+        cluster = 0
         for cluster_idx, centroid_i in enumerate(self.centroids):
           distance = self.distance(centroid_i, data_point)
           # print("centroid, distance", centroid_i, distance)
