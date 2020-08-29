@@ -23,6 +23,7 @@ def silhouete_coef(x, centroids):
   return (distances[1] - distances[0]) / max(distances[0], distances[1])
 
 def silhouete_score(X, centroids):
+  X=np.array(X)
   silhouete_coefs = []
   for point in X:
     silhouete_coefs.append(silhouete_coef(point, centroids))
